@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Unholy</title>
+
+    <style>
+      :root{
+        --bg1:#07080b;
+        --bg2:#11131a;
+        --rust:#d46a2e;
+        --rust2:#9b3d1b;
+        --steel:#cfd4dc;
+        --card: rgba(10, 11, 14, 0.66);
+        --stroke: rgba(255,255,255,0.10);
+        --glow: rgba(212,106,46,0.40);
+        --max: 920px;
+      }
+      *{ box-sizing:border-box; }
+      html,body{ height:100%; }
+      body{
+        margin:0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        color:#eef0f4;
+        background:
+          radial-gradient(1200px 700px at 70% 18%, rgba(212,106,46,0.12), transparent 60%),
+          radial-gradient(900px 700px at 15% 85%, rgba(155,61,27,0.14), transparent 60%),
+          linear-gradient(135deg, var(--bg1), var(--bg2));
+        overflow-x:hidden;
+      }
+
+      /* gritty “rust-esque” texture (no game assets) */
+      .texture::before{
+        content:"";
+        position:fixed;
+        inset:-50px;
+        background:
+          radial-gradient(circle at 18% 28%, rgba(212,106,46,0.14), transparent 42%),
+          radial-gradient(circle at 82% 74%, rgba(155,61,27,0.16), transparent 44%),
+          repeating-linear-gradient(120deg, rgba(255,255,255,0.03) 0 2px, transparent 2px 10px),
+          repeating-linear-gradient(35deg, rgba(0,0,0,0.30) 0 1px, transparent 1px 8px);
+        opacity:0.55;
+        pointer-events:none;
+        transform: translate3d(0,0,0);
+        filter: contrast(1.08) saturate(1.06);
+      }
+
+      /* reactive “spotlight” that follows cursor */
+      .spotlight{
+        position:fixed;
+        inset:0;
+        pointer-events:none;
+        background: radial-gradient(520px 380px at var(--mx, 50%) var(--my, 50%),
+          rgba(212,106,46,0.11),
+          rgba(0,0,0,0) 62%);
+        mix-blend-mode: screen;
+        opacity:0.9;
+      }
+
+      /* embers */
+      .embers{ position:fixed; inset:0; pointer-events:none; opacity:0.55; }
+      .ember{
+        position:absolute;
+        width:4px;height:4px;border-radius:999px;
+        background: radial-gradient(circle, rgba(255,210,140,0.95), rgba(212,106,46,0.55), transparent 70%);
+        animation: floatUp linear infinite;
+        mix-blend-mode: screen;
+        filter: blur(0.2px);
+      }
+      @keyframes floatUp{
+        from{ transform: translateY(30vh) translateX(0) scale(0.8); opacity:0; }
+        10%{ opacity:0.9; }
+        to{ transform: translateY(-120vh) translateX(26px) scale(1.2); opacity:0; }
+      }
+
+      .wrap{
+        max-width: var(--max);
+        margin: 0 auto;
+        padding: 54px 18px 28px;
+        position:relative;
+      }
+
+      .card{
+        background: var(--card);
+        border: 1px solid var(--stroke);
+        border-radius: 22px;
+        padding: 28px 22px 24px;
+        box-shadow:
+          0 26px 80px rgba(0,0,0,0.58),
+          0 0 0 1px rgba(0,0,0,0.35) inset;
+        backdrop-filter: blur(10px);
+        transform-style: preserve-3d;
+        transition: border-color 220ms ease, box-shadow 220ms ease;
+      }
+      .card:hover{
+        border-color: rgba(212,106,46,0.22);
+        box-shadow:
+          0 34px 110px rgba(0,0,0,0.66),
+          0 0 0 1px rgba(0,0,0,0.35) inset,
+          0 0 70px rgba(212,106,46,0.08);
+      }
+
+      .topline{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:12px;
+        margin-bottom: 10px;
+      }
+      .badge{
+        font-size: 0.86rem;
+        color: rgba(238,240,244,0.85);
+        border: 1px solid rgba(255,255,255,0.12);
+        background: rgba(0,0,0,0.25);
+        padding: 8px 10px;
+        border-radius: 999px;
+        display:flex;
+        align-items:center;
+        gap:8px;
+        white-space:nowrap;
+      }
+      .dot{
+        width:10px;height:10px;border-radius:999px;
+        background: radial-gradient(circle, rgba(255,210,140,1), rgba(212,106,46,0.9));
+        box-shadow: 0 0 18px rgba(212,106,46,0.35);
+      }
+
+      h1{
+        margin:0;
+        font-size: clamp(2.6rem, 6.5vw, 4.4rem);
+        letter-spacing: 0.04em;
+        line-height: 1.05;
+        text-transform: uppercase;
+      }
+      .titleGlow{
+        background: linear-gradient(180deg, #ffffff, var(--steel) 52%, rgba(212,106,46,0.90));
+        -webkit-background-clip: text;
+        background-clip:text;
+        color: transparent;
+        text-shadow: 0 0 30px rgba(212,106,46,0.10);
+      }
+
+      .sub{
+        margin-top: 14px;
+        font-size: clamp(1.04rem, 2.2vw, 1.24rem);
+        color: rgba(238,240,244,0.90);
+        line-height: 1.55;
+      }
+      .x{
+        display:inline-flex;
+        align-items: baseline;
+        gap: 8px;
+        font-weight: 900;
+        color:#fff;
+      }
+      #viewCount, #viewCountInline{
+        font-variant-numeric: tabular-nums;
+        padding: 2px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,0.14);
+        background: rgba(212,106,46,0.12);
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.2) inset;
+      }
+
+      .cheeky{
+        margin-top: 16px;
+        padding: 12px 12px;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,0.10);
+        background: rgba(0,0,0,0.22);
+        color: rgba(238,240,244,0.78);
+        font-size: 0.98rem;
+      }
+
+      .hint{
+        margin-top: 14px;
+        font-size: 0.92rem;
+        color: rgba(238,240,244,0.55);
+      }
+
+      .footer{
+        max-width: var(--max);
+        margin: 16px auto 0;
+        padding: 0 18px 30px;
+        color: rgba(238,240,244,0.45);
+        font-size: 0.9rem;
+      }
+
+      @media (max-width: 520px){
+        .topline{ flex-direction:column; align-items:flex-start; }
+      }
+    </style>
+
+    <!-- CounterAPI browser CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/counterapi/dist/counter.browser.min.js"></script>
+  </head>
+
+  <body class="texture">
+    <div class="spotlight" id="spotlight"></div>
+    <div class="embers" id="embers"></div>
+
+    <main class="wrap">
+      <section class="card" id="card">
+        <div class="topline">
+          <div class="badge" title="Counter status">
+            <span class="dot"></span>
+            <span id="statusText">Loading…</span>
+          </div>
+          <div class="badge" title="Total page views">
+            Views: <span id="viewCount">…</span>
+          </div>
+        </div>
+
+        <h1 class="titleGlow">Unholy</h1>
+
+        <p class="sub">
+          I assume you're here because you're mad.
+          You're the <span class="x"><span id="viewCountInline">…</span> <span id="personWord">person</span></span> who was mad enough to visit.
+        </p>
+
+        <div class="cheeky" id="cheekyLine">…</div>
+        <div class="hint" id="hint"></div>
+      </section>
+    </main>
+
+    <div class="footer">© <span id="year"></span> Unholy</div>
+
+    <script>
+      // ---------- helpers ----------
+      function ordinal(n) {
+        const v = n % 100;
+        if (v >= 11 && v <= 13) return n + "th";
+        switch (n % 10) {
+          case 1: return n + "st";
+          case 2: return n + "nd";
+          case 3: return n + "rd";
+          default: return n + "th";
+        }
+      }
+
+      function personOrPeople(n){
+        return n === 1 ? "person" : "people";
+      }
+
+      // deterministic “random” (so each visitor sees a consistent cheeky line)
+      function xmur3(str) {
+        let h = 1779033703 ^ str.length;
+        for (let i = 0; i < str.length; i++) {
+          h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+          h = (h << 13) | (h >>> 19);
+        }
+        return function() {
+          h = Math.imul(h ^ (h >>> 16), 2246822507);
+          h = Math.imul(h ^ (h >>> 13), 3266489909);
+          h ^= h >>> 16;
+          return h >>> 0;
+        };
+      }
+      function mulberry32(a) {
+        return function() {
+          let t = a += 0x6D2B79F5;
+          t = Math.imul(t ^ (t >>> 15), t | 1);
+          t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+
+      // ---------- reactive spotlight ----------
+      const spotlight = document.getElementById("spotlight");
+      window.addEventListener("pointermove", (e) => {
+        const x = (e.clientX / window.innerWidth) * 100;
+        const y = (e.clientY / window.innerHeight) * 100;
+        document.body.style.setProperty("--mx", x + "%");
+        document.body.style.setProperty("--my", y + "%");
+      });
+
+      // ---------- card tilt ----------
+      const card = document.getElementById("card");
+      window.addEventListener("pointermove", (e) => {
+        const r = card.getBoundingClientRect();
+        const cx = r.left + r.width / 2;
+        const cy = r.top + r.height / 2;
+        const dx = (e.clientX - cx) / r.width;
+        const dy = (e.clientY - cy) / r.height;
+        const rotX = (-dy * 4).toFixed(2);
+        const rotY = (dx * 6).toFixed(2);
+        card.style.transform = `perspective(900px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(0)`;
+      });
+      window.addEventListener("pointerleave", () => card.style.transform = "");
+
+      // ---------- embers ----------
+      const embers = document.getElementById("embers");
+      for (let i = 0; i < 18; i++) {
+        const el = document.createElement("div");
+        el.className = "ember";
+        el.style.left = Math.random() * 100 + "vw";
+        el.style.top = (60 + Math.random() * 60) + "vh";
+        el.style.animationDuration = (6 + Math.random() * 10) + "s";
+        el.style.animationDelay = (-Math.random() * 10) + "s";
+        el.style.opacity = (0.25 + Math.random() * 0.65).toFixed(2);
+        embers.appendChild(el);
+      }
+
+      // ---------- footer year ----------
+      document.getElementById("year").textContent = new Date().getFullYear();
+
+      // ---------- cheeky lines ----------
+      const cheekyLines = [
+        "Deep breaths. It's just pixels on the internet.",
+        "You really loaded a whole webpage just to be mad. Respect the dedication.",
+        "Welcome. The complaint department is closed, but the vibes are open.",
+        "If you’re looking for closure, try closing the tab.",
+        "Please proceed to the nearest coping mechanism.",
+        "This site runs on caffeine, spite, and questionable decisions.",
+        "Unholy support ticket received. Resolution: lol.",
+        "You came here angry. I came here prepared.",
+        "May your blood pressure be lower than your KD ratio.",
+        "If salt powered electricity, you'd be powering Cleveland right now.",
+        "Rage detected. Converting it into absolutely nothing.",
+        "Consider this your official invitation to touch grass."
+      ];
+
+      function getVisitorId(){
+        const key = "unholy_visitor_id";
+        let id = localStorage.getItem(key);
+        if (!id) {
+          id = (crypto?.randomUUID?.() || (Date.now() + "-" + Math.random()));
+          localStorage.setItem(key, id);
+        }
+        return id;
+      }
+
+      function setCheekyLine(globalCount){
+        const visitorId = getVisitorId();
+        const seedFn = xmur3(visitorId + "::" + String(globalCount));
+        const rand = mulberry32(seedFn());
+        const idx = Math.floor(rand() * cheekyLines.length);
+        document.getElementById("cheekyLine").textContent = cheekyLines[idx];
+      }
+
+      // ---------- counter ----------
+      const WORKSPACE = "unholy-site";  // change if you want
+      const COUNTER = "rage-visits";    // change if you want
+
+      const viewCountEl = document.getElementById("viewCount");
+      const viewCountInlineEl = document.getElementById("viewCountInline");
+      const personWordEl = document.getElementById("personWord");
+      const statusText = document.getElementById("statusText");
+      const hint = document.getElementById("hint");
+
+      function setCount(n){
+        viewCountEl.textContent = n;               // raw number in the badge
+        viewCountInlineEl.textContent = ordinal(n); // ordinal in the sentence
+        personWordEl.textContent = personOrPeople(n);
+        setCheekyLine(n);
+      }
+
+      (async function runCounter(){
+        try{
+          const counter = new Counter({ workspace: WORKSPACE });
+
+          // Count once per browser/device (reduces refresh-spam).
+          const seenKey = `seen_${WORKSPACE}_${COUNTER}`;
+          const alreadyCounted = localStorage.getItem(seenKey) === "1";
+
+          let result;
+          if (!alreadyCounted) {
+            result = await counter.up(COUNTER);
+            localStorage.setItem(seenKey, "1");
+            statusText.textContent = "Counted. ✅";
+          } else {
+            result = await counter.get(COUNTER);
+            statusText.textContent = "Welcome back. ✅";
+          }
+
+          setCount(result.value);
+          hint.textContent = "";
+        } catch (e){
+          console.error(e);
+          statusText.textContent = "Counter error (local only).";
+          const key = "local_rage_visits";
+          const local = (parseInt(localStorage.getItem(key) || "0", 10) + 1);
+          localStorage.setItem(key, String(local));
+          setCount(local);
+          hint.textContent = "If you want a fully controlled counter + rate limiting, host on Cloudflare Pages and I’ll swap this to a tiny Worker endpoint.";
+        }
+      })();
+    </script>
+  </body>
+</html>
