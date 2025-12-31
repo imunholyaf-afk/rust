@@ -11,9 +11,9 @@
       --jungle-mid:#0e1a12;
       --toxic:#7CFF00;
       --toxic-soft:#b6ff5c;
-      --mist:rgba(124,255,0,0.08);
+      --mist:rgba(124,255,0,0.09);
       --card:rgba(6,12,9,0.74);
-      --stroke:rgba(124,255,0,0.18);
+      --stroke:rgba(124,255,0,0.20);
       --max: 980px;
     }
 
@@ -25,12 +25,13 @@
       font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       color:#e9ffe8;
       background:
-        radial-gradient(1200px 600px at 20% 80%, rgba(124,255,0,0.12), transparent 60%),
-        radial-gradient(900px 700px at 80% 20%, rgba(34,90,55,0.25), transparent 65%),
+        radial-gradient(1200px 600px at 20% 80%, rgba(124,255,0,0.13), transparent 60%),
+        radial-gradient(900px 700px at 80% 20%, rgba(34,90,55,0.28), transparent 65%),
         linear-gradient(135deg,var(--jungle-dark),var(--jungle-mid));
       overflow-x:hidden;
     }
 
+    /* fog / texture overlay */
     body::before{
       content:"";
       position:fixed;
@@ -38,30 +39,33 @@
       background:
         repeating-linear-gradient(120deg, rgba(255,255,255,0.015) 0 2px, transparent 2px 10px),
         radial-gradient(circle at 30% 30%, var(--mist), transparent 45%),
-        radial-gradient(circle at 70% 70%, var(--mist), transparent 45%);
-      opacity:.6;
+        radial-gradient(circle at 70% 70%, var(--mist), transparent 45%),
+        radial-gradient(circle at 40% 85%, rgba(124,255,0,0.06), transparent 50%);
+      opacity:.65;
       pointer-events:none;
     }
 
+    /* reactive spotlight follows cursor */
     .spotlight{
       position:fixed;
       inset:0;
       pointer-events:none;
       background: radial-gradient(560px 420px at var(--mx, 50%) var(--my, 50%),
-        rgba(124,255,0,0.10),
+        rgba(124,255,0,0.11),
         rgba(0,0,0,0) 62%);
       mix-blend-mode: screen;
-      opacity:0.9;
+      opacity:0.95;
     }
 
-    .fireflies{ position:fixed; inset:0; pointer-events:none; opacity:0.85; }
+    /* fireflies */
+    .fireflies{ position:fixed; inset:0; pointer-events:none; opacity:0.9; }
     .fly{
       position:absolute;
       width:5px;height:5px;
       border-radius:50%;
       background: radial-gradient(circle, var(--toxic), transparent 70%);
       animation: float 14s linear infinite;
-      filter: blur(.3px);
+      filter: blur(.35px);
       mix-blend-mode: screen;
     }
     @keyframes float{
@@ -90,7 +94,7 @@
       transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
     }
     .card:hover{
-      border-color: rgba(124,255,0,0.26);
+      border-color: rgba(124,255,0,0.28);
       box-shadow:
         0 56px 170px rgba(0,0,0,.78),
         inset 0 0 0 1px rgba(0,0,0,.62);
@@ -114,10 +118,259 @@
       background: rgba(0,0,0,.35);
       border: 1px solid rgba(124,255,0,.25);
       font-size: .86rem;
-      color: rgba(233,255,232,0.88);
+      color: rgba(233,255,232,0.90);
     }
 
     .dot{
       width:10px;height:10px;border-radius:999px;
       background: radial-gradient(circle, var(--toxic-soft), var(--toxic));
-      box-shadow: 0 0 18px rgba(124,255
+      box-shadow: 0 0 18px rgba(124,255,0,.35);
+    }
+
+    h1{
+      margin:0;
+      font-size: clamp(2.8rem, 6vw, 5rem);
+      text-transform: uppercase;
+      letter-spacing: .09em;
+      line-height: 1.05;
+    }
+
+    /* lime green name */
+    .name{
+      background: linear-gradient(180deg, var(--toxic-soft), var(--toxic));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow:
+        0 0 18px rgba(124,255,0,.68),
+        0 0 46px rgba(124,255,0,.36);
+    }
+
+    .sub{
+      margin-top: 16px;
+      font-size: clamp(1.05rem, 2.2vw, 1.22rem);
+      line-height: 1.6;
+      color: #d8ffe0;
+    }
+
+    .count{
+      font-weight: 900;
+      color: var(--toxic);
+    }
+
+    #viewCount, #viewCountInline { font-variant-numeric: tabular-nums; }
+
+    .cheeky{
+      margin-top: 18px;
+      padding: 14px 14px;
+      border-radius: 16px;
+      background: rgba(0,0,0,.35);
+      border: 1px solid rgba(124,255,0,.20);
+      color: #cfffbc;
+      min-height: 52px;
+      display:flex;
+      align-items:center;
+    }
+
+    .hint{
+      margin-top: 10px;
+      color: rgba(200,255,200,.55);
+      font-size: .9rem;
+    }
+
+    footer{
+      margin-top: 28px;
+      color: rgba(200,255,200,.40);
+      font-size: .85rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="spotlight"></div>
+  <div class="fireflies" id="flies"></div>
+
+  <main class="wrap">
+    <section class="card" id="card">
+      <div class="topline">
+        <div class="badge" title="Counter status">
+          <span class="dot"></span>
+          <span id="statusText">Loading...</span>
+        </div>
+        <div class="badge" title="Total visits">
+          🌿 Visits: <span id="viewCount">...</span>
+        </div>
+      </div>
+
+      <h1 class="name">Unholy</h1>
+
+      <p class="sub">
+        I assume you're here because you're mad.
+        You're the <span class="count"><span id="viewCountInline">...</span> person</span> who was mad enough to visit.
+      </p>
+
+      <div class="cheeky" id="cheekyLine">...</div>
+      <div class="hint" id="hint"></div>
+    </section>
+
+    <footer>© <span id="year"></span> Unholy</footer>
+  </main>
+
+  <script>
+    // ========= CONFIG =========
+    const COUNTER_ENDPOINT = "https://unholy-counter.imunholy-af.workers.dev";
+    const COUNTER_NAME = "rage-visits";
+
+    // ========= Ordinal helper =========
+    function ordinal(n) {
+      const v = n % 100;
+      if (v >= 11 && v <= 13) return n + "th";
+      switch (n % 10) {
+        case 1: return n + "st";
+        case 2: return n + "nd";
+        case 3: return n + "rd";
+        default: return n + "th";
+      }
+    }
+
+    // ========= Visitor ID (stable per device) =========
+    function getVisitorId() {
+      const key = "unholy_visitor_id";
+      let id = localStorage.getItem(key);
+      if (!id) {
+        id = (crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now() + "-" + Math.random());
+        localStorage.setItem(key, id);
+      }
+      return id;
+    }
+
+    // ========= Deterministic random so visitor gets stable line =========
+    function xmur3(str) {
+      let h = 1779033703 ^ str.length;
+      for (let i = 0; i < str.length; i++) {
+        h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+        h = (h << 13) | (h >>> 19);
+      }
+      return function() {
+        h = Math.imul(h ^ (h >>> 16), 2246822507);
+        h = Math.imul(h ^ (h >>> 13), 3266489909);
+        h ^= h >>> 16;
+        return h >>> 0;
+      };
+    }
+    function mulberry32(a) {
+      return function() {
+        let t = a += 0x6D2B79F5;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    // ========= YOUR APPROVED LINES ONLY (ASCII quotes) =========
+    const cheekyLines = [
+      "You lost, didn't you.",
+      "This page smells like post-death anger.",
+      "You didn't come here happy.",
+      "Someone just lost a kit.",
+      "Respawn energy detected.",
+      "You alt-tabbed straight into this.",
+      "Rage carried you here faster than sprinting.",
+      "You came here instead of touching grass. Irony noted.",
+      "You came all this way for this.",
+      "This is your sign to touch grass.",
+      "You could be outside right now.",
+      "Fresh air exists. Consider it.",
+      "Sunlight is still free.",
+      "Grass is waiting. Patiently.",
+      "Your chair has seen enough.",
+      "Your expectations were optimistic.",
+      "Touch grass, then reassess.",
+      "Thanks for the free loot."
+    ];
+
+    function setCheekyLine(globalCount) {
+      const visitorId = getVisitorId();
+      const seedFn = xmur3(visitorId + "::" + String(globalCount));
+      const rand = mulberry32(seedFn());
+      const idx = Math.floor(rand() * cheekyLines.length);
+      document.getElementById("cheekyLine").textContent = cheekyLines[idx];
+    }
+
+    // ========= Effects =========
+    window.addEventListener("pointermove", (e) => {
+      const x = (e.clientX / window.innerWidth) * 100;
+      const y = (e.clientY / window.innerHeight) * 100;
+      document.body.style.setProperty("--mx", x + "%");
+      document.body.style.setProperty("--my", y + "%");
+    });
+
+    // subtle tilt
+    const card = document.getElementById("card");
+    window.addEventListener("pointermove", (e) => {
+      const r = card.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      const dx = (e.clientX - cx) / r.width;
+      const dy = (e.clientY - cy) / r.height;
+      const rotX = (-dy * 3.5).toFixed(2);
+      const rotY = (dx * 5.5).toFixed(2);
+      card.style.transform = `perspective(900px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(0)`;
+    });
+    window.addEventListener("pointerleave", () => card.style.transform = "");
+
+    // fireflies spawn
+    const flies = document.getElementById("flies");
+    for (let i = 0; i < 22; i++) {
+      const el = document.createElement("div");
+      el.className = "fly";
+      el.style.left = Math.random() * 100 + "vw";
+      el.style.top = (60 + Math.random() * 60) + "vh";
+      el.style.animationDuration = (10 + Math.random() * 10) + "s";
+      el.style.animationDelay = (-Math.random() * 10) + "s";
+      el.style.opacity = (0.25 + Math.random() * 0.75).toFixed(2);
+      flies.appendChild(el);
+    }
+
+    // ========= Counter wiring =========
+    const viewCountEl = document.getElementById("viewCount");
+    const viewCountInlineEl = document.getElementById("viewCountInline");
+    const statusText = document.getElementById("statusText");
+    const hint = document.getElementById("hint");
+
+    function setCount(n) {
+      viewCountEl.textContent = n;
+      viewCountInlineEl.textContent = ordinal(n);
+      setCheekyLine(n);
+    }
+
+    async function fetchCount() {
+      const visitor = encodeURIComponent(getVisitorId());
+      const url = `${COUNTER_ENDPOINT}?name=${encodeURIComponent(COUNTER_NAME)}&visitor=${visitor}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Counter failed");
+      return res.json();
+    }
+
+    (async function runCounter() {
+      try {
+        const result = await fetchCount();
+        statusText.textContent = "Counted. ✅";
+        setCount(result.value);
+        hint.textContent = "";
+      } catch (e) {
+        console.error(e);
+        statusText.textContent = "Counter error (local only).";
+        hint.textContent = "Counter endpoint not reachable right now.";
+        // fallback local counter so the page still works
+        const key = "local_rage_visits";
+        const local = (parseInt(localStorage.getItem(key) || "0", 10) + 1);
+        localStorage.setItem(key, String(local));
+        setCount(local);
+      }
+    })();
+
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
